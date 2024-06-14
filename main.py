@@ -5,6 +5,8 @@ from functools import wraps
 from typing import Callable, Dict
 from pickle import dump, load
 
+from colorama import Fore
+
 debug: bool = False
 
 
@@ -159,70 +161,75 @@ class AddressBook(UserDict):
         return dates
 
 
+def style(data: Exception | str, color: int = Fore.RED) -> str:
+    return color + str(data) + Fore.RESET
+
+
 def input_error(func: Callable) -> Callable:
+
     @wraps(func)
     def inner(*args: list, **kwargs: dict):
         try:
             return func(*args, **kwargs)
         except Exception:
-            return 'Something went wrong.'
+            return style('Something went wrong.')
 
     @wraps(func)
     def add_contact_error(args: list[str], book: AddressBook) -> str:
         try:
             return func(args, book)
         except PhoneError as e:
-            return e
+            return style(e)
         except ValueError:
-            return 'Give me a new name and a new phone, please.'
+            return style('Give me a new name and a new phone, please.')
 
     @wraps(func)
     def change_contact_error(args: list[str], book: AddressBook) -> str:
         try:
             return func(args, book)
         except (PhoneError, RecordError) as e:
-            return e
+            return style(e)
         except ValueError:
-            return 'Give me an existing name and a new phone, please.'
+            return style('Give me an existing name and a new phone, please.')
 
     @wraps(func)
     def show_phone_error(args: list[str], book: AddressBook) -> str:
         try:
             return func(args, book)
         except RecordError as e:
-            return e
+            return style(e)
         except IndexError:
-            return RecordError.MESSAGE
+            return style(RecordError.MESSAGE)
 
     @wraps(func)
     def show_all_error(book: AddressBook) -> str:
         try:
             return func(book)
         except ValueError:
-            return 'Contacts list is empty.'
+            return style('Contacts list is empty.')
 
     @wraps(func)
     def add_birthday_error(args: list[str], book: AddressBook) -> str:
         try:
             return func(args, book)
         except (BirthdayError, RecordError) as e:
-            return e
+            return style(e)
         except ValueError:
-            return 'Give me an existing name and birthday date, please.'
+            return style('Give me an existing name and birthday date, please.')
 
     @wraps(func)
     def show_birthday_error(args: list[str], book: AddressBook) -> str:
         try:
             return func(args, book)
         except (IndexError, RecordError):
-            return RecordError.MESSAGE
+            return style(RecordError.MESSAGE)
 
     @wraps(func)
     def birthdays_error(book: AddressBook) -> str:
         try:
             return func(book)
         except ValueError:
-            return 'Birthdays list is empty.'
+            return style('Birthdays list is empty.')
 
     HANDLERS: Dict[str, Callable] = {
         'add_contact': add_contact_error,
@@ -241,7 +248,7 @@ def prompt() -> str:
     '''
     Greeting.
     '''
-    return 'How can I help you?'
+    return style('How can I help you?', Fore.GREEN)
 
 
 @input_error
@@ -254,9 +261,9 @@ def add_contact(args: list[str], book: AddressBook) -> str:
         record = Record(name)
         record.add_phone(phone)
         book.add_record(record)
-        return 'Contact added.'
+        return style('Contact added.', Fore.GREEN)
     else:
-        return 'Contact is already added.'
+        return style('Contact is already added.')
 
 
 @input_error
@@ -266,12 +273,12 @@ def change_contact(args: list[str], book: AddressBook) -> str:
     record = book.find(name)
     record.edit_phone(record.phones[0].value, phone)
 
-    return 'Contact updated.'
+    return style('Contact updated.', Fore.GREEN)
 
 
 @input_error
 def show_phone(args: list[str], book: AddressBook) -> str:
-    return str(book.find(args[0]))
+    return style(str(book.find(args[0])), Fore.GREEN)
 
 
 def table(left_cell: str,
@@ -325,12 +332,12 @@ def show_all(book: AddressBook) -> str:
 def add_birthday(args: list[str], book: AddressBook) -> str:
     name, birthday, *_ = args
     book.find(name).add_birthday(birthday)
-    return 'Birthday added.'
+    return style('Birthday added.', Fore.GREEN)
 
 
 @input_error
 def show_birthday(args: list[str], book: AddressBook) -> str:
-    return str(book.find(args[0]).birthday)
+    return style(str(book.find(args[0]).birthday), Fore.GREEN)
 
 
 @input_error
@@ -381,7 +388,7 @@ def save_data(book: AddressBook, filename: str = 'address-book.pkl') -> None:
 @input_error
 def quit(book: AddressBook) -> str:
     save_data(book)
-    return 'Good bye!'
+    return style('Good bye!', Fore.YELLOW)
 
 
 class Reader(ABC):
@@ -455,10 +462,10 @@ def description(commands: list[Dict[str, Callable]]) -> str:
 
 
 def main() -> None:
-    reader = CliReader('Enter a command: ')
+    reader = CliReader(style('Enter a command: ', Fore.BLUE))
     writer = CliWriter()
 
-    writer.write('Welcome to the assistant bot!')
+    writer.write(style('Welcome to the assistant bot!', Fore.YELLOW))
 
     book = load_data()
 
@@ -494,7 +501,7 @@ def main() -> None:
     while True:
         command, *args = reader.read()
 
-        response = 'Invalid command.'
+        response = style('Invalid command.')
 
         for count, callbacks in enumerate(COMMANDS):
             if command in callbacks:
