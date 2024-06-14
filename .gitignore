@@ -1,2 +1,4 @@
+.venv
 .vscode
 *.pkl
+poetry.lock
