@@ -1,3 +1,35 @@
+# Assistant bot
+
+## Pre-installation
+
+```bash
+$ pip[3] install poetry
+$ poetry config virtualenvs.in-project true
+```
+
+## Installation
+
+```bash
+$ git clone https://github.com/lexhouk/goit-pyweb-hw-02.git goit-pyweb-hw-02
+$ cd goit-pyweb-hw-02
+$ poetry shell
+$ poetry install
+```
+
+## Usage
+
+```bash
+$ python main.py
+```
+
+or with debug:
+
+```bash
+$ python main.py --debug
+```
+
+## Classes diagram
+
 ```mermaid
 classDiagram
     Field <|--* Name

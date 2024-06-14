@@ -166,7 +166,6 @@ def style(data: Exception | str, color: int = Fore.RED) -> str:
 
 
 def input_error(func: Callable) -> Callable:
-
     @wraps(func)
     def inner(*args: list, **kwargs: dict):
         try:
